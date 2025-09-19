@@ -1,22 +1,13 @@
 {
   description = "plu-stan - Haskell Static Analysis for Plutus/Plinth";
-
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-
-    # Cardano Haskell Packages for Plutus dependencies
-    CHaP = {
-      url = "github:intersectmbo/cardano-haskell-packages?ref=repo";
-      flake = false;
-    };
   };
-
   outputs = {
     self,
     nixpkgs,
     flake-utils,
-    CHaP,
   }:
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = import nixpkgs {
@@ -27,27 +18,19 @@
         };
       };
 
-      haskellPackages = pkgs.haskell.packages.ghc98.override {
-        overrides = final: prev: {
-        };
-      };
-
       # System dependencies needed for Cardano/Plutus
       systemDependencies = with pkgs; [
-        # Crypto libraries
-        libblst
+        # Crypto libraries (using blst instead of libblst)
+        blst
         libsodium
         secp256k1
-
         # Build tools
         pkg-config
         zlib
-
         # Development tools
         cabal-install
         ghc
         haskell-language-server
-
         # Optional tools
         hlint
         fourmolu
@@ -73,14 +56,12 @@
           echo "    cabal build"
           echo "    cabal run stan -- --help"
 
-          export PKG_CONFIG_PATH="${pkgs.libblst}/lib/pkgconfig:${pkgs.libsodium}/lib/pkgconfig:${pkgs.secp256k1}/lib/pkgconfig:$PKG_CONFIG_PATH"
+          # Configure pkg-config paths for crypto libraries
+          export PKG_CONFIG_PATH="${pkgs.blst}/lib/pkgconfig:${pkgs.libsodium}/lib/pkgconfig:${pkgs.secp256k1}/lib/pkgconfig:$PKG_CONFIG_PATH"
         '';
       };
     in {
       devShells.default = devShell;
-
-      devShell = devShell;
-
-      packages.default = haskellPackages.callCabal2nix "stan" ./. {};
+      packages.default = pkgs.haskell.packages.ghc98.callCabal2nix "stan" ./. {};
     });
 }
