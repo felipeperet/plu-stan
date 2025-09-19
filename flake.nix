@@ -18,9 +18,15 @@
         };
       };
 
+      # Use GHC 9.6
+      haskellPackages = pkgs.haskell.packages.ghc96.override {
+        overrides = final: prev: {
+        };
+      };
+
       # System dependencies needed for Cardano/Plutus
       systemDependencies = with pkgs; [
-        # Crypto libraries (using blst instead of libblst)
+        # Crypto libraries
         blst
         libsodium
         secp256k1
@@ -29,7 +35,7 @@
         zlib
         # Development tools
         cabal-install
-        ghc
+        (haskellPackages.ghc)
         haskell-language-server
         # Optional tools
         hlint
@@ -62,6 +68,6 @@
       };
     in {
       devShells.default = devShell;
-      packages.default = pkgs.haskell.packages.ghc98.callCabal2nix "stan" ./. {};
+      packages.default = haskellPackages.callCabal2nix "stan" ./. {};
     });
 }
