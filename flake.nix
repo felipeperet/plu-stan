@@ -25,22 +25,25 @@
       };
 
       # System dependencies needed for Cardano/Plutus
-      systemDependencies = with pkgs; [
-        # Crypto libraries
-        blst
-        libsodium
-        secp256k1
-        # Build tools
-        pkg-config
-        zlib
-        # Development tools
-        cabal-install
-        (haskellPackages.ghc)
-        haskell-language-server
-        # Optional tools
-        hlint
-        fourmolu
-      ];
+      systemDependencies = with pkgs;
+        [
+          # Crypto libraries
+          blst
+          libsodium
+          secp256k1
+          # Build tools
+          pkg-config
+          zlib
+          # Development tools
+          cabal-install
+          (haskellPackages.ghc)
+          # Optional tools
+          hlint
+          fourmolu
+        ]
+        ++ [
+          haskellPackages.haskell-language-server
+        ];
 
       devShell = pkgs.mkShell {
         buildInputs =
@@ -56,6 +59,7 @@
           echo "• Project: $(basename $PWD)"
           echo "• GHC version: $(ghc --version)"
           echo "• Cabal version: $(cabal --version | head -1)"
+          echo "• HLS version: $(haskell-language-server --version 2>/dev/null | head -1 || echo 'HLS not found')"
           echo ""
           echo "• Quick start:"
           echo "    cabal update"
